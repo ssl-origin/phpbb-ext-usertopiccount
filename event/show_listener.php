@@ -66,6 +66,29 @@ class show_listener implements EventSubscriberInterface
 		]);
 
 		$this->language->add_lang('profile', 'marttiphpbb/usertopiccount');
+
+	    // total topics forum
+		global $db;
+		$sql = 'SELECT COUNT(topic_id) AS total_topics
+			FROM ' . TOPICS_TABLE . '
+			WHERE topic_visibility = ' . ITEM_APPROVED;
+		$result = $db->sql_query($sql);
+		$total_topics = (int) $db->sql_fetchfield('total_topics');
+		$db->sql_freeresult($result);
+
+		// %
+		$percent = $total_topics ? round(($user_topics / $total_topics) * 100, 2) : 0;
+
+		// days registration
+		$regdate = (int) $member['user_regdate'];
+		$days = max((time() - $regdate) / 86400, 1);
+		$per_day = round($user_topics / $days, 2);
+
+		$this->template->assign_vars([
+			'MARTTI_TOPICS_PERCENT' => $percent,
+			'MARTTI_TOPICS_PER_DAY' => $per_day,
+		]);
+		
 	}
 
 	public function core_viewtopic_cache_user_data(event $event):void
