@@ -66,8 +66,12 @@ class show_listener implements EventSubscriberInterface
 		]);
 
 		$this->language->add_lang('profile', 'marttiphpbb/usertopiccount');
+		$this->language->add_lang('profile', 'marttiphpbb/usertopiccount', false, true);
 
-	    // total topics forum
+
+		$user_topics = (int) $member['user_topic_count'];
+
+		// total topics forum
 		global $db;
 		$sql = 'SELECT COUNT(topic_id) AS total_topics
 			FROM ' . TOPICS_TABLE . '
@@ -88,7 +92,7 @@ class show_listener implements EventSubscriberInterface
 			'MARTTI_TOPICS_PERCENT' => $percent,
 			'MARTTI_TOPICS_PER_DAY' => $per_day,
 		]);
-		
+
 	}
 
 	public function core_viewtopic_cache_user_data(event $event):void
