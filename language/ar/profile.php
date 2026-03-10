@@ -21,4 +21,6 @@ $lang = array_merge($lang, [
 	'MARTTIPHPBB_USERTOPICCOUNT_TOTAL'				=> 'إجمالي المواضيع ',
 	'MARTTIPHPBB_USERTOPICCOUNT_SEARCH'				=> 'البحث عن مواضيع العضو',
 	'MARTTIPHPBB_USERTOPICCOUNT_SEARCH_YOUR_TOPICS'	=> 'اظهار مواضيعك',
+	'MARTTIPHPBB_USERTOPICCOUNT_PERCENT'            => 'of all topics',
+	'MARTTIPHPBB_USERTOPICCOUNT_PER_DAY'            => 'topics per day',				
 ]);
