@@ -1,11 +1,17 @@
 <div class="usertopiccount-hidden">
-	<dt>{{- lang('MARTTIPHPBB_USERTOPICCOUNT_TOTAL') -}}{{- lang('COLON') -}}</dt>
-		<dd>
-			{{- MARTTIPHPBB_USERTOPICCOUNT -}}
-				{%- if S_DISPLAY_SEARCH %} | <strong>
-					<a href="{{- U_MARTTIPHPBB_USERTOPICCOUNT_SEARCH -}}">
-						{{- lang('MARTTIPHPBB_USERTOPICCOUNT_SEARCH') -}}
-					</a></strong>{%- endif -%}
-		</dd>
+	<dt class="usertopiccount-label">{{ lang('MARTTIPHPBB_USERTOPICCOUNT_TOTAL') }}{{ lang('COLON') }}</dt>
+	<dd class="usertopiccount-label">
+		{{ MARTTIPHPBB_USERTOPICCOUNT }}
+		{% if S_DISPLAY_SEARCH %} | <strong>
+			<a href="{{ U_MARTTIPHPBB_USERTOPICCOUNT_SEARCH }}">
+				{{ lang('MARTTIPHPBB_USERTOPICCOUNT_SEARCH') }}
+			</a>
+		</strong>{% endif %}
+
+		{% if MARTTI_TOPICS_PERCENT %}
+		<br>
+		({{ MARTTI_TOPICS_PERCENT }}% {{ lang('MARTTIPHPBB_USERTOPICCOUNT_PERCENT') }} / {{ MARTTI_TOPICS_PER_DAY }} {{ lang('MARTTIPHPBB_USERTOPICCOUNT_PER_DAY') }})
+		{% endif %}
+	</dd>
 </div>
 {%- INCLUDEJS '@marttiphpbb_usertopiccount/profile.js' -%}
