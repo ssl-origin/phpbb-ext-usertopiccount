@@ -67,7 +67,6 @@ class update_listener implements EventSubscriberInterface
 		];
 	}
 
-	// functions_admin.php // test
 	public function core_move_posts_sync_after(event $event):void
 	{
 		$topic_id = $event['topic_id'];
@@ -78,7 +77,6 @@ class update_listener implements EventSubscriberInterface
 		$this->update->for_user_ary($topic_poster_ary);
 	}
 
-	// functions_posting.php // ok
 	public function core_submit_post_end(event $event):void
 	{
 		$mode = $event['mode'];
@@ -90,10 +88,14 @@ class update_listener implements EventSubscriberInterface
 
 		$data = $event['data'];
 
-		$this->update->for_user($data['poster_id']);
+		if (!isset($data['poster_id']) || !$data['poster_id'])
+		{
+			return;
+		}
+
+		$this->update->for_user((int) $data['poster_id']);
 	}
 
-	// functions_posting.php // test
 	public function core_delete_post_after(event $event):void
 	{
 		$post_mode = $event['post_mode'];
@@ -125,35 +127,28 @@ class update_listener implements EventSubscriberInterface
 		$this->update->for_user_ary(array_keys($user_ids));
 	}
 
-	// functions_admin.php // test
 	public function core_delete_posts_after(event $event):void
 	{
 		error_log('core.delete_posts_after');
 	}
 
-	// functions_admin.php
 	public function core_delete_topics_before_query(event $event):void
 	{
 		$topic_ids = $event['topic_ids'];
-
-		// catch users for recalculation in after query.
 		$this->users_to_recalc = $this->get_topic_poster_ary($topic_ids);
 	}
 
-	// functions_admin.php
 	public function core_delete_topics_after_query(event $event):void
 	{
 		error_log('core.delete_topics_after_query');
 		$this->update->for_user_ary($this->users_to_recalc);
 	}
 
-	// functions_admin.php // handle in "delete_posts()"
 	public function core_prune_delete_before(event $event):void
 	{
 		error_log('core.prune_delete_before');
 	}
 
-	// mcp/mcp_queue.php  // test
 	public function core_approve_posts_after(event $event):void
 	{
 		$post_info = $event['post_info'];
@@ -163,7 +158,7 @@ class update_listener implements EventSubscriberInterface
 
 		foreach ($topic_info as $topic_id => $topic_data)
 		{
-			if ($topic_data['first_post'])
+			if (!empty($topic_data['first_post']))
 			{
 				foreach ($topic_data['posts'] as $post_id)
 				{
@@ -176,30 +171,38 @@ class update_listener implements EventSubscriberInterface
 
 		foreach ($post_info as $post_id => $post_data)
 		{
-			$posters[$post_info[$post_id]['poster_id']] = true;
+			if (!empty($post_data['poster_id']))
+			{
+				$posters[$post_data['poster_id']] = true;
+			}
 		}
 
-		$sql = 'select ps.poster_id from (
-				select min(p.post_id), p.poster_id, p.topic_id, p.post_id
-				from ' . $this->posts_table . ' p
-				where ' . $this->db->sql_in_set('p.topic_id', array_keys($topics)) . '
-					and p.post_visibility = ' . ITEM_APPROVED . '
-				group by p.topic_id) ps
-			where ' . $this->db->sql_in_set('post_id', array_keys($posts), true);
-
-		$result = $this->db->sql_query($sql);
-
-		while($poster_id = $this->db->sql_fetchfield('poster_id'))
+		if (!empty($topics) && !empty($posts))
 		{
-			$posters[$poster_id] = true;
+			$sql = 'select ps.poster_id from (
+					select min(p.post_id), p.poster_id, p.topic_id, p.post_id
+					from ' . $this->posts_table . ' p
+					where ' . $this->db->sql_in_set('p.topic_id', array_keys($topics)) . '
+						and p.post_visibility = ' . ITEM_APPROVED . '
+					group by p.topic_id) ps
+				where ' . $this->db->sql_in_set('post_id', array_keys($posts), true);
+
+			$result = $this->db->sql_query($sql);
+
+			while ($poster_id = $this->db->sql_fetchfield('poster_id'))
+			{
+				$posters[$poster_id] = true;
+			}
+
+			$this->db->sql_freeresult($result);
 		}
 
-		$this->db->sql_freeresult($result);
-
-		$this->update->for_user_ary(array_keys($posters));
+		if (!empty($posters))
+		{
+			$this->update->for_user_ary(array_keys($posters));
+		}
 	}
 
-	// mcp/mcp_queue.php //test
 	public function core_approve_topics_after(event $event):void
 	{
 		$topic_info = $event['topic_info'];
@@ -214,20 +217,17 @@ class update_listener implements EventSubscriberInterface
 		$this->update->for_user_ary(array_keys($posters));
 	}
 
-	// mcp/mcp_queue.php // nothing?
 	public function core_disapprove_posts_after(event $event):void
 	{
 		error_log('disapprove posts after');
 	}
 
-	// phpbb/content_visibility.php //test
 	public function core_set_post_visibility_after(event $event):void
 	{
 		$topic_id = $event['topic_id'];
 		$this->update->for_topic($topic_id);
 	}
 
-	// phpbb/content_visibility.php //test
 	public function core_set_topic_visibility_after(event $event):void
 	{
 		$topic_id = $event['topic_id'];
